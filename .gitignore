@@ -1,39 +1,96 @@
-# History files
-.Rhistory
-.Rapp.history
-
-# Session Data files
-.RData
-
-# User-specific files
-.Ruserdata
-
-# Example code in package build process
-*-Ex.R
-
-# Output files from R CMD build
-/*.tar.gz
-
-# Output files from R CMD check
-/*.Rcheck/
-
-# RStudio files
-.Rproj.user/
-
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
-
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
-.httr-oauth
-
-# knitr and R markdown default cache directories
-*_cache/
-/cache/
-
-# Temporary files created by R markdown
-*.utf8.md
-*.knit.md
-
-# R Environment Variables
-.Renviron
+library(tidyverse)
+library(neuralnet)
+library(itsmr)
+library(C50)
+library(caret)
+library(randomForest)
+library(mlbench)
+library(class)
+library(ggplot2)
+library(MASS)
+library(gbm)
+library(skimr)
+library(dplyr)
+library(tidyr)
+library(fastDummies)
+install.packages("caret")
+install.packages("randomForest")
+install.packages("mlbench")
+install.packages("skimr")
+install.packages("fastDummies")
+train=read.csv("/Users/dorisjia/Desktop/mmf-data-science-kaggle/train.csv")
+test=read.csv("/Users/dorisjia/Desktop/mmf-data-science-kaggle/test.csv")
+### train set
+skim(train)  # no missing value
+train$cut = factor(train$cut,order = FALSE)
+train$clarity = factor(train$clarity,order = FALSE)
+train$color = factor(train$color,order = FALSE)
+intClass = rep(1,nrow(train))
+intClass2 = rep(1,nrow(train))
+intClass3 = rep(1,nrow(train))
+intClass[train$cut == 'Fair'] = 1
+intClass[train$cut == 'Good'] = 2
+intClass[train$cut == 'Very Good'] = 3
+intClass[train$cut == 'Premium'] = 4
+intClass[train$cut == 'Ideal'] = 5
+#clarity
+intClass2[train$clarity == 'I1'] = 1
+intClass2[train$clarity == 'SI2'] = 2
+intClass2[train$clarity == 'SI1'] = 3
+intClass2[train$clarity == 'VS2'] = 4
+intClass2[train$clarity == 'VS1'] = 5
+intClass2[train$clarity == 'VVS2'] = 6
+intClass2[train$clarity == 'VVS1'] = 7
+intClass2[train$clarity == 'IF'] = 8
+#color
+intClass3[train$color == 'J'] = 1
+intClass3[train$color == 'I'] = 2
+intClass3[train$color == 'H'] = 3
+intClass3[train$color == 'G'] = 4
+intClass3[train$color == 'F'] = 5
+intClass3[train$color == 'E'] = 6
+intClass3[train$color == 'D'] = 7
+train$cut = intClass
+train$clarity = intClass2
+train$color = intClass3
+train
+int_TestClass = rep(1,nrow(test))
+int_TestClass2 = rep(1,nrow(test))
+int_TestClass3 = rep(1,nrow(test))
+test$cut = factor(test$cut,order = FALSE)
+test$clarity = factor(test$clarity,order = FALSE)
+test$color = factor(test$color,order = FALSE)
+int_TestClass[test$cut == 'Fair'] = 1
+int_TestClass[test$cut == 'Good'] = 2
+int_TestClass[test$cut == 'Very Good'] = 3
+int_TestClass[test$cut == 'Premium'] = 4
+int_TestClass[test$cut == 'Ideal'] = 5
+#clarity
+int_TestClass2[test$clarity == 'I1'] = 1
+int_TestClass2[test$clarity == 'SI2'] = 2
+int_TestClass2[test$clarity == 'SI1'] = 3
+int_TestClass2[test$clarity == 'VS2'] = 4
+int_TestClass2[test$clarity == 'VS1'] = 5
+int_TestClass2[test$clarity == 'VVS2'] = 6
+int_TestClass2[test$clarity == 'VVS1'] = 7
+int_TestClass2[test$clarity == 'IF'] = 8
+#color
+int_TestClass3[test$color == 'J'] = 1
+int_TestClass3[test$color == 'I'] = 2
+int_TestClass3[test$color == 'H'] = 3
+int_TestClass3[test$color == 'G'] = 4
+int_TestClass3[test$color == 'F'] = 5
+int_TestClass3[test$color == 'E'] = 6
+int_TestClass3[test$color == 'D'] = 7
+test$cut = int_TestClass
+test$clarity = int_TestClass2
+test$color = int_TestClass3
+#fit = lm(price ~ cut + carat + clarity + color, data = train)
+#summary(fit)
+colnames(test)[1] <- "X"
+rf_fit = randomForest(price ~., data = train, mtry = (ncol(train) - 1), ntree = 10, importance = TRUE )
+rf_pred = predict(rf_fit,test)
+table1 <- data.frame(rf_pred)
+colnames(table1) <- c("price")
+rf <- cbind("id"= 0:(nrow(table1)-1),table1) 
+write.csv(rf,"/Users/dorisjia/Desktop/train_rf.csv", row.names = FALSE)
