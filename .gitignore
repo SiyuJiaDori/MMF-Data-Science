@@ -85,8 +85,6 @@ int_TestClass3[test$color == 'D'] = 7
 test$cut = int_TestClass
 test$clarity = int_TestClass2
 test$color = int_TestClass3
-#fit = lm(price ~ cut + carat + clarity + color, data = train)
-#summary(fit)
 colnames(test)[1] <- "X"
 rf_fit = randomForest(price ~., data = train, mtry = (ncol(train) - 1), ntree = 10, importance = TRUE )
 rf_pred = predict(rf_fit,test)
